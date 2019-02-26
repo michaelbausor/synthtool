@@ -51,6 +51,52 @@ Node.js generation is similar to python. For an example `synth.py` you can look 
 
 
 ## Features
+
+### synth.metadata
+
+Every Synthtool run generates a `synth.metadata` file. This metadata file stores information about the generation.
+
+```
+{
+  "updateTime": "2019-02-26T13:18:51.664960Z",
+  "sources": [
+    {
+      "generator": {
+        "name": "artman",
+        "version": "0.16.14",
+        "dockerImage": "googleapis/artman@sha256:f3d61ae45abaeefb6be5f228cda22732c2f1b00fb687c79c4bd4f2c42bb1e1a7"
+      }
+    },
+    {
+      "git": {
+        "name": "googleapis",
+        "remote": "https://github.com/googleapis/googleapis.git",
+        "sha": "29f098cb03a9983cc9cb15993de5da64419046f2",
+        "internalRef": "235621085"
+      }
+    },
+    {
+      "template": {
+        "name": "python_library",
+        "origin": "synthtool.gcp",
+        "version": "2019.1.16"
+      }
+    }
+  ],
+  "destinations": [
+    {
+      "client": {
+        "source": "googleapis",
+        "apiName": "kms",
+        "apiVersion": "v1",
+        "language": "python",
+        "generator": "gapic",
+        "config": "google/cloud/kms/artman_cloudkms.yaml"
+      }
+    }
+  ]
+}
+```
 ### Templating
 Synthtool supports template files using jinja. As an example let's look at node.js. The templates for node can be found at `/synthtool/gcp/templates/node_library/`. The following is taken from a node.js synth script.
 
