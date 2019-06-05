@@ -2,18 +2,24 @@
 This tool helps to generate and layout cloud client libraries. 
 
 ## Installation
-This tool requires Python 3.6. Either install it from [python.org][python_downloads] or use
+
+### Dependencies
+* **Python 3.6**: Either install it from [python.org][python_downloads] or use
 [pyenv][] to get 3.6.
 
-[python_downloads]: https://www.python.org/downloads/
-[pyenv]: https://github.com/pyenv/pyenv
+  [python_downloads]: https://www.python.org/downloads/
+  [pyenv]: https://github.com/pyenv/pyenv
 
-### Install latest
+* **[Docker](https://www.docker.com/)**. [Docker for macOS](https://hub.docker.com/editions/community/docker-ce-desktop-mac).
+
+
+### Install synthtool
+#### latest
 ```
 python3 -m pip install --user --upgrade git+https://github.com/googleapis/synthtool.git
 ```
 
-### Install stable
+#### stable
 ```
 python3 -m pip install --user --upgrade gcp-synthtool
 ```
