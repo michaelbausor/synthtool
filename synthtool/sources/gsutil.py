@@ -48,20 +48,20 @@ def copy_dir_from_gcs(
 
 
 def copy_file_from_gcs(
-    url: str
-    dest: pathlib.Path = None
+    url: str,
+    dest: pathlib.Path = None,
 ) -> str:
     if dest is None:
         dest = cache.get_cache_dir()
 
-    shell.run(['gsutil', 'cp', url, dest], cwd=str(dest))
+    shell.run(['gsutil', 'cp', url, str(dest)], cwd=str(dest))
 
     return dest / pathlib.Path(url).stem
 
 
 def get_file_content_from_gcs(
-    url: str
-    dest: pathlib.Path = None
+    url: str,
+    dest: pathlib.Path = None,
 ) -> str:
     file_dest = copy_file_from_gcs(url, dest=dest)
     with open(file_dest, 'r') as f:

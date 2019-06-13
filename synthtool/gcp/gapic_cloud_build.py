@@ -28,7 +28,9 @@ from synthtool.sources import gsutil
 
 CLOUD_BUILD_PROJECT: str = 'vkit-pipeline'
 CLOUD_BUILD_BUCKET_URI: str = f'gs://{CLOUD_BUILD_PROJECT}-cloud-build-artifacts/github_googleapis_googleapis'
-CLOUD_BUILD_LATEST_SHA_URI: str = f'{CLOUD_BUILD_BUCKET_URI}/cloud_build_latest'
+CLOUD_BUILD_LATEST_SHA_FILE: str = 'cloud_build_latest'
+
+CLOUD_BUILD_BUCKET_URI_OVERRIDE: Optional[str] = os.environ.get("SYNTHTOOL_CLOUD_BUILD_URI")
 
 
 class GAPICCloudBuild:
@@ -37,28 +39,11 @@ class GAPICCloudBuild:
         self._googleapis_private = None
         self._artman = artman.Artman()
 
-    def py_library(self, service: str, version: str, **kwargs) -> Path:
-        """
-        Generates the Python Library files using artman/GAPIC
-        returns a `Path` object
-        library: path to library. 'google/cloud/speech'
-        version: version of lib. 'v1'
-        """
-        return self._generate_code(service, version, "python", **kwargs)
-
-    def node_library(self, service: str, version: str, **kwargs) -> Path:
-        return self._generate_code(service, version, "nodejs", **kwargs)
-
-    nodejs_library = node_library
-
-    def ruby_library(self, service: str, version: str, **kwargs) -> Path:
-        return self._generate_code(service, version, "ruby", **kwargs)
-
     def php_library(self, service: str, version: str, **kwargs) -> Path:
-        return self._generate_code(service, version, "php", **kwargs)
+        return self._download_gapic_code(service, version, "php", **kwargs)
 
     def java_library(self, service: str, version: str, **kwargs) -> Path:
-        return self._generate_code(service, version, "java", **kwargs)
+        return self._download_gapic_code(service, version, "java", **kwargs)
 
     def _download_gapic_code(
         self,
@@ -78,27 +63,25 @@ class GAPICCloudBuild:
             "php": (f"google-cloud-{service}-{version}-php", "php"),
         }
 
-        if language not in LANGUAGE_ARTIFACT_FORMAT:
+        if language not in LANGUAGE_DIRECTORY_NAME:
             raise ValueError("provided language unsupported")
 
         language_directory_name, gen_language = LANGUAGE_DIRECTORY_NAME[language]
 
-        # Determine which googleapis repo to use
-        if googleapis is None:
-            raise RuntimeError(
-                f"Unable to generate {service_path}, the googleapis repository"
-                "is unavailable."
-            )
+        if CLOUD_BUILD_BUCKET_URI_OVERRIDE:
+            gcs_uri = CLOUD_BUILD_BUCKET_URI_OVERRIDE
+        else:
+            gcs_uri = CLOUD_BUILD_BUCKET_URI
 
         # Get googleapis SHA
         if googleapis_sha is None:
-            googleapis_sha = _get_latest_googleapis_sha()
+            googleapis_sha = self._get_latest_googleapis_sha(gcs_uri)
 
         # Download the GAPIC directory
         if gapic_dir is None:
-            gapic_dir = pathlib.Path('gapic-cloud-build') / language_directory_name
+            gapic_dir = Path('gapic-cloud-build') / language_directory_name
 
-        gapic_dir_gs_uri = f'{CLOUD_BUILD_BUCKET_URI}/{googleapis_sha}/{gapic_dir}'
+        gapic_dir_gs_uri = f'{gcs_uri}/{googleapis_sha}/{gapic_dir}'
 
         log.debug(f"Running gsutil to fetch gapic directory: {gapic_dir_gs_uri}.")
         genfiles = gsutil.copy_dir_from_gcs(gapic_dir_gs_uri)
@@ -141,5 +124,5 @@ class GAPICCloudBuild:
         _tracked_paths.add(genfiles)
         return genfiles
 
-    def _get_latest_googleapis_sha(self):
-          return gsutil.get_file_content_from_gcs(CLOUD_BUILD_LATEST_SHA_URI)
+    def _get_latest_googleapis_sha(self, gcs_uri):
+          return gsutil.get_file_content_from_gcs(f'{gcs_uri}/{CLOUD_BUILD_LATEST_SHA_FILE}')
