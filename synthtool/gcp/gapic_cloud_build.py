@@ -19,7 +19,6 @@ from typing import Optional
 from synthtool import _tracked_paths
 from synthtool import log
 from synthtool import metadata
-from synthtool.gcp import artman
 from synthtool.sources import gsutil
 
 #GOOGLEAPIS_URL: str = git.make_repo_clone_url("googleapis/googleapis")
@@ -34,11 +33,6 @@ CLOUD_BUILD_BUCKET_URI_OVERRIDE: Optional[str] = os.environ.get("SYNTHTOOL_CLOUD
 
 
 class GAPICCloudBuild:
-    def __init__(self):
-        self._googleapis = None
-        self._googleapis_private = None
-        self._artman = artman.Artman()
-
     def php_library(self, service: str, version: str, **kwargs) -> Path:
         return self._download_gapic_code(service, version, "php", **kwargs)
 
